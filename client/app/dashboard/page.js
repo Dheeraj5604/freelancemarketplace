@@ -2,6 +2,14 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import {
+  PlusCircle,
+  ClipboardList,
+  Search,
+  LogOut,
+  User,
+  Mail,
+} from "lucide-react";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -15,58 +23,86 @@ export default function Dashboard() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold mb-4 text-blue-600">Welcome, {user.name} 👋</h1>
-        <p className="mb-6 text-gray-600">
-          You're logged in as a <span className="font-semibold">{user.role}</span>.
-        </p>
+    <main className="min-h-screen bg-gradient-to-br from-indigo-100 to-blue-200 p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <header className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-extrabold text-blue-800">Dashboard</h1>
+          <button
+            onClick={logout}
+            className="flex items-center gap-2 text-red-600 border border-red-600 hover:bg-red-100 px-4 py-2 rounded-md font-medium transition"
+          >
+            <LogOut size={18} /> Logout
+          </button>
+        </header>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <div className="p-4 border rounded-lg bg-blue-50 shadow-sm">
-            <h3 className="font-semibold text-gray-800">📧 Email</h3>
-            <p className="text-gray-600 text-sm">{user.email}</p>
-          </div>
-          <div className="p-4 border rounded-lg bg-green-50 shadow-sm">
-            <h3 className="font-semibold text-gray-800">🧑 Role</h3>
-            <p className="text-gray-600 text-sm capitalize">{user.role}</p>
-          </div>
-          <div className="p-4 border rounded-lg bg-yellow-50 shadow-sm">
-            <h3 className="font-semibold text-gray-800">⚙️ Actions</h3>
-            <p className="text-gray-600 text-sm">Use the buttons below to explore.</p>
-          </div>
-        </div>
+        {/* Welcome Card */}
+        <section className="bg-white rounded-xl shadow p-6 mb-10">
+          <h2 className="text-2xl font-bold text-blue-700 mb-2">
+            Welcome, {user.name} 👋
+          </h2>
+          <p className="text-gray-600">
+            You're logged in as a <strong>{user.role}</strong>.
+          </p>
+        </section>
 
-        <div className="flex flex-wrap gap-4 mb-6">
+        {/* Profile Info */}
+        <section className="grid md:grid-cols-3 gap-6 mb-10">
+          <div className="bg-white p-6 rounded-xl shadow flex items-start gap-4">
+            <User className="text-blue-600" size={28} />
+            <div>
+              <h3 className="font-semibold text-gray-800">Name</h3>
+              <p className="text-gray-600">{user.name}</p>
+            </div>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow flex items-start gap-4">
+            <Mail className="text-green-600" size={28} />
+            <div>
+              <h3 className="font-semibold text-gray-800">Email</h3>
+              <p className="text-gray-600">{user.email}</p>
+            </div>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow flex items-start gap-4">
+            <ClipboardList className="text-purple-600" size={28} />
+            <div>
+              <h3 className="font-semibold text-gray-800">Role</h3>
+              <p className="text-gray-600 capitalize">{user.role}</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Action Buttons */}
+        <section className="grid sm:grid-cols-3 gap-6">
           {user.role === "freelancer" && (
             <button
               onClick={() => router.push("/gig/create")}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="flex flex-col items-center justify-center bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 p-6 rounded-xl shadow-md transition text-center"
             >
-              ➕ Add New Gig
+              <PlusCircle size={32} className="mb-2" />
+              <span className="font-semibold text-lg">Add New Gig</span>
             </button>
           )}
           <button
             onClick={() => router.push("/gigs")}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            className="flex flex-col items-center justify-center bg-white border border-green-600 text-green-600 hover:bg-green-50 p-6 rounded-xl shadow-md transition text-center"
           >
-            🔍 Browse Gigs
+            <Search size={32} className="mb-2" />
+            <span className="font-semibold text-lg">Browse Gigs</span>
           </button>
           <button
             onClick={() => router.push("/orders")}
-            className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
+            className="flex flex-col items-center justify-center bg-white border border-yellow-600 text-yellow-600 hover:bg-yellow-50 p-6 rounded-xl shadow-md transition text-center"
           >
-            📦 View Orders
+            <ClipboardList size={32} className="mb-2" />
+            <span className="font-semibold text-lg">View Orders</span>
           </button>
-        </div>
+        </section>
 
-        <button
-          onClick={logout}
-          className="text-red-600 hover:underline text-sm"
-        >
-          🔓 Logout
-        </button>
+        {/* Footer */}
+        <footer className="text-center text-gray-500 mt-12 text-sm">
+          &copy; {new Date().getFullYear()} Freelancer Marketplace. All rights reserved.
+        </footer>
       </div>
-    </div>
+    </main>
   );
 }
