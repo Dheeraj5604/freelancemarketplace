@@ -9,53 +9,59 @@ export default function AddGig() {
     title: "",
     description: "",
     price: "",
-    freelancerName: "", // You can fetch this from auth later
+    freelancerName: "", // Later you can fetch this from auth
   });
 
   const [loading, setLoading] = useState(false);
-  const [aiSummary, setAiSummary] = useState("");
-  const [aiKeywords, setAiKeywords] = useState([]);
-  const [created, setCreated] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setAiSummary("");
-    setAiKeywords([]);
-    setCreated(false);
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/gigs`,
-        form
-      );
-
-      console.log("Gig created:", res.data);
-
-      // ✅ Set AI-generated fields from backend response
-      setAiSummary(res.data.summary);
-      setAiKeywords(res.data.keywords);
-      setCreated(true);
-
-      // ✅ Optional delay to show AI output before redirect
-      setTimeout(() => {
-        router.push("/gigs");
-      }, 3000);
-    } catch (error) {
-      console.error("Gig creation failed:", error.response?.data || error);
-      alert("Gig creation failed. Check console for details.");
-    } finally {
+  try {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser || storedUser.role !== "freelancer") {
+      alert("Only logged-in freelancers can create gigs.");
       setLoading(false);
+      return;
     }
-  };
+
+    const dataToSend = {
+      ...form,
+      freelancerId: storedUser._id,
+    };
+console.log("➡️ Sending this data to backend:", dataToSend);
+
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/gigs`,
+      dataToSend
+    );
+
+    console.log("Gig created:", res.data);
+    router.push("/gigs");
+  } catch (error) {
+    console.error("Gig creation failed:", error.response?.data || error);
+    alert("Gig creation failed. Check console for details.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <main className="min-h-screen bg-gray-100 p-10">
       <div className="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-8">
+        {/* 🔙 Back Button */}
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="mb-6 text-sm text-blue-600 hover:text-blue-800 underline"
+        >
+          ← Back to Dashboard
+        </button>
         <h1 className="text-2xl font-bold text-blue-600 mb-6">➕ Add New Gig</h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -103,34 +109,6 @@ export default function AddGig() {
             {loading ? "Creating..." : "Create Gig"}
           </button>
         </form>
-
-        {/* ✅ AI Output Preview */}
-        {created && (
-          <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-            {aiSummary && (
-              <>
-                <h3 className="text-lg font-semibold mb-2">🧠 AI Summary:</h3>
-                <p className="text-gray-700">{aiSummary}</p>
-              </>
-            )}
-
-            {aiKeywords.length > 0 && (
-              <>
-                <h3 className="text-lg font-semibold mt-4 mb-2">🔑 AI Keywords:</h3>
-                <div className="flex flex-wrap gap-2">
-                  {aiKeywords.map((kw, idx) => (
-                    <span
-                      key={idx}
-                      className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm"
-                    >
-                      #{kw}
-                    </span>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        )}
       </div>
     </main>
   );

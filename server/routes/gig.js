@@ -1,22 +1,17 @@
 const express = require("express");
 const Gig = require("../models/Gig");
-const { summarizeGig, extractKeywords } = require("../services/openaiService");
 
 const router = express.Router();
 
-// 🔹 POST /api/gigs — Create a new gig with AI integration
+// 🔹 POST /api/gigs — Create a new gig 
 router.post("/", async (req, res) => {
   try {
-    const { title, description, price, freelancerName } = req.body;
+    const { title, description, price, freelancerName,freelancerId } = req.body;
 
     // 🛡 Validate required fields
-    if (!title || !description || !price || !freelancerName) {
+    if (!title || !description || !price || !freelancerName || !freelancerId) {
       return res.status(400).json({ message: "All fields are required." });
     }
-
-    // 🧠 AI: Generate summary and keywords
-    const summary = "This is a short summary of the gig description.";
-const keywords = ["freelance", "gig", "web", "design", "services"];
 
     // 💾 Save gig to MongoDB
     const gig = new Gig({
@@ -24,20 +19,15 @@ const keywords = ["freelance", "gig", "web", "design", "services"];
       description,
       price: Number(price),
       freelancerName,
-      summary,
-      keywords,
+      freelancerId,
     });
 
     await gig.save();
 
-    // ✅ Return created gig with AI fields
+    // ✅ Return created gig
     res.status(201).json({
       message: "Gig created successfully",
-      gig: {
-        ...gig.toObject(),
-        summary,
-        keywords,
-      },
+      gig,
     });
   } catch (err) {
     console.error("❌ Gig creation failed:", err);
@@ -56,6 +46,17 @@ router.get("/", async (req, res) => {
   } catch (err) {
     console.error("❌ Fetch gigs error:", err);
     res.status(500).json({ message: "Failed to fetch gigs", error: err.message });
+  }
+});
+
+// GET /api/gigs/:id
+router.get("/:id", async (req, res) => {
+  try {
+    const gig = await Gig.findById(req.params.id);
+    if (!gig) return res.status(404).json({ message: "Gig not found" });
+    res.json(gig);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching gig", error: err.message });
   }
 });
 

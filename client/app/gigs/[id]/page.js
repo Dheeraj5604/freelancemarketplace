@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 
 export default function GigDetailPage() {
   const router = useRouter();
-  const { id } = useParams(); // dynamic [id]
+  const { id } = useParams();
   const [gig, setGig] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,12 +23,22 @@ export default function GigDetailPage() {
   }, [id]);
 
   const placeOrder = async () => {
+    const storedUser = localStorage.getItem("user");
+    const client = storedUser ? JSON.parse(storedUser) : null;
+
+    if (!client || client.role !== "client") {
+      alert("Only logged-in clients can place orders.");
+      return;
+    }
+
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/orders`, {
         gig: gig._id,
-        clientName: "Dheeraj", // Replace with actual logged-in user name or a field
-        price: gig.price
+        client: client._id,
+        freelancer: gig.freelancerId,
+        price: gig.price,
       });
+
       alert("✅ Order placed successfully!");
       router.push("/orders");
     } catch (error) {
@@ -43,6 +53,14 @@ export default function GigDetailPage() {
   return (
     <main className="min-h-screen p-10 bg-gray-50">
       <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow">
+        {/* 🔙 Back Button */}
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="mb-6 text-sm text-blue-600 hover:text-blue-800 underline"
+        >
+          ← Back to Dashboard
+        </button>
+
         <h1 className="text-3xl font-bold text-blue-700 mb-4">{gig.title}</h1>
         <p className="text-gray-700 mb-4">{gig.description}</p>
         <p className="text-sm text-gray-500 mb-2">Freelancer: {gig.freelancerName}</p>
