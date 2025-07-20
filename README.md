@@ -23,7 +23,7 @@ Tools: Postman, Git & GitHub, dotenv, VS Code
 
  Getting Started
 Clone the repository
-git clone https://github.com/Dheeraj5604/freelancer-marketplace.git
+git clone https://github.com/Dheeraj5604/freelancemarketplace.git
 cd freelancer-marketplace
 
 Install dependencies
