@@ -14,7 +14,7 @@ app.use(express.json());
 
 // ✅ Now load all routes AFTER middleware
 const authRoutes = require('./routes/auth');
-const orderRoutes = require('./routes/order');
+const orderRoutes = require('./routes/orders');
 const gigRoutes = require('./routes/gig');
 
 app.use('/api/auth', authRoutes);

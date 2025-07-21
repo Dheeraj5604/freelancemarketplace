@@ -5,7 +5,7 @@ const gigSchema = new mongoose.Schema({
   description: { type: String, required: true },
   price: { type: Number, required: true },
   freelancerName: { type: String, required: true },
-  freelancerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  freelancerId: { type: mongoose.Schema.Types.ObjectId, ref: "User",required: true },
   createdAt: { type: Date, default: Date.now },
 });
 

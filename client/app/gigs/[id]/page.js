@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
+import { User } from "lucide-react";
 
 export default function GigDetailPage() {
   const router = useRouter();
@@ -23,29 +24,33 @@ export default function GigDetailPage() {
   }, [id]);
 
   const placeOrder = async () => {
-    const storedUser = localStorage.getItem("user");
-    const client = storedUser ? JSON.parse(storedUser) : null;
+  const storedUser = localStorage.getItem("user");
+  const client = storedUser ? JSON.parse(storedUser) : null;
 
-    if (!client || client.role !== "client") {
-      alert("Only logged-in clients can place orders.");
-      return;
-    }
+  if (!client || client.role !== "client") {
+    alert("Only logged-in clients can place orders.");
+    return;
+  }
 
-    try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/orders`, {
-        gig: gig._id,
-        client: client._id,
-        freelancer: gig.freelancerId,
-        price: gig.price,
-      });
-
-      alert("✅ Order placed successfully!");
-      router.push("/orders");
-    } catch (error) {
-      console.error("❌ Failed to place order:", error.response?.data || error);
-      alert("Failed to place order. Check console.");
-    }
+  const payload = {
+    gig: gig?._id,
+    client: client?._id,
+    freelancer: gig?.freelancerId,
+    price: gig?.price,
   };
+
+  console.log("🧾 Order payload to send:", payload);
+
+  try {
+    const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/orders`, payload);
+    alert("✅ Order placed successfully!");
+    router.push("/orders");
+  } catch (error) {
+    console.error("❌ Failed to place order:", error.response?.data || error);
+    alert("❌ Failed to place order. Check console.");
+  }
+};
+
 
   if (loading) return <p>Loading...</p>;
   if (!gig) return <p>Gig not found</p>;

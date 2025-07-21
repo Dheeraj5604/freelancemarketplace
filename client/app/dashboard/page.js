@@ -1,7 +1,8 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   PlusCircle,
   ClipboardList,
@@ -11,14 +12,42 @@ import {
   Mail,
 } from "lucide-react";
 
+const updateOrderStatus = async (orderId, newStatus, fetchOrders) => {
+  try {
+    const res = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}/status`, {
+      status: newStatus,
+    });
+    alert(`Order marked as ${newStatus}`);
+    fetchOrders(); // Refresh orders after update
+  } catch (error) {
+    console.error("Failed to update status:", error.response?.data || error);
+    alert("Failed to update order status.");
+  }
+};
+
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [orders, setOrders] = useState([]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!user) router.push("/login");
   }, [user, router]);
+
+  const fetchOrders = async () => {
+    if (!user || user.role !== "freelancer") return;
+    try {
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/orders/freelancer/${user._id}`);
+      setOrders(res.data);
+    } catch (error) {
+      console.error("Failed to fetch orders:", error.response?.data || error);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, [user]);
 
   if (!user) return null;
 
@@ -72,7 +101,7 @@ export default function Dashboard() {
         </section>
 
         {/* Action Buttons */}
-        <section className="grid sm:grid-cols-3 gap-6">
+        <section className="grid sm:grid-cols-3 gap-6 mb-10">
           {user.role === "freelancer" && (
             <button
               onClick={() => router.push("/gig/create")}
@@ -97,6 +126,55 @@ export default function Dashboard() {
             <span className="font-semibold text-lg">View Orders</span>
           </button>
         </section>
+
+        {/* Orders Section */}
+        {user.role === "freelancer" && (
+          <section className="mt-10">
+            <h2 className="text-2xl font-bold text-blue-800 mb-4">Your Orders</h2>
+            {orders.length === 0 ? (
+              <p className="text-gray-600">No orders yet.</p>
+            ) : (
+              orders.map((order) => (
+                <div
+                  key={order._id}
+                  className="bg-white p-4 rounded-xl shadow mb-4 flex justify-between items-center"
+                >
+                  <div>
+                    <p className="font-semibold">Gig: {order.gigId?.title || "Gig Info"}</p>
+                    <p className="text-gray-600">Status: <strong>{order.status}</strong></p>
+                    <p className="text-sm text-gray-500">Client: {order.clientId?.name || "N/A"}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    {order.status === "pending" && (
+                      <>
+                        <button
+                          onClick={() => updateOrderStatus(order._id, "accepted", fetchOrders)}
+                          className="bg-green-600 text-white px-4 py-1 rounded"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => updateOrderStatus(order._id, "rejected", fetchOrders)}
+                          className="bg-red-600 text-white px-4 py-1 rounded"
+                        >
+                          Reject
+                        </button>
+                      </>
+                    )}
+                    {order.status === "accepted" && (
+                      <button
+                        onClick={() => updateOrderStatus(order._id, "completed", fetchOrders)}
+                        className="bg-blue-600 text-white px-4 py-1 rounded"
+                      >
+                        Mark Completed
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </section>
+        )}
 
         {/* Footer */}
         <footer className="text-center text-gray-500 mt-12 text-sm">
